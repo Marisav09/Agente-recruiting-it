@@ -1,3 +1,5 @@
+# Archivo para ejecutar el proceso completo de ETL y enriquecimiento del dataset
+
 from app.data.loader import cargar_dataset, guardar_dataset
 from app.services.prediccion import enriquecer_dataset
 

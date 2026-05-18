@@ -1,4 +1,5 @@
-#
+# Rutas para el módulo de inventario (ETL, análisis, alertas)
+
 from fastapi import APIRouter, HTTPException
 from app.data.loader import cargar_dataset, guardar_dataset
 from app.services.prediccion import enriquecer_dataset
