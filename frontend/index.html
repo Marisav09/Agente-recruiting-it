@@ -1,0 +1,923 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Recruit IT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #080d16;
+        --panel: rgba(16, 24, 38, 0.82);
+        --panel-strong: rgba(18, 28, 45, 0.94);
+        --line: rgba(161, 178, 205, 0.18);
+        --text: #f5f7fb;
+        --muted: #aab6c7;
+        --soft: #d6dbe5;
+        --blue: #5f8fd8;
+        --blue-strong: #7aa7f2;
+        --indigo: #8a7bd8;
+        --cyan-soft: #7fb6c9;
+        --ink: #08111f;
+        --shadow: 0 22px 70px rgba(0, 0, 0, 0.35);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        background:
+          linear-gradient(120deg, rgba(95, 143, 216, 0.16), transparent 34%),
+          linear-gradient(240deg, rgba(138, 123, 216, 0.13), transparent 32%),
+          linear-gradient(180deg, #080d16 0%, #0d1422 48%, #0a0f19 100%);
+        color: var(--text);
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        letter-spacing: 0;
+      }
+
+      body::before {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        content: "";
+        background-image:
+          linear-gradient(rgba(161, 178, 205, 0.06) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(161, 178, 205, 0.045) 1px, transparent 1px);
+        background-size: 64px 64px;
+        mask-image: linear-gradient(to bottom, black, transparent 86%);
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 18px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        backdrop-filter: blur(18px);
+      }
+
+      .brand,
+      .nav-links a,
+      .primary-action {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .brand {
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+        font-weight: 800;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        border: 1px solid rgba(122, 167, 242, 0.35);
+        border-radius: 8px;
+        background: rgba(95, 143, 216, 0.13);
+        color: var(--blue-strong);
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 24px;
+        color: var(--muted);
+        font-size: 0.92rem;
+        font-weight: 700;
+      }
+
+      .nav-links a {
+        transition: color 180ms ease, transform 180ms ease;
+      }
+
+      .nav-links a:hover {
+        color: var(--blue-strong);
+        transform: translateY(-1px);
+      }
+
+      main {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .hero {
+        min-height: 58vh;
+        padding: 84px 0 58px;
+        display: grid;
+        align-items: end;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .hero-shell {
+        max-width: 860px;
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--blue-strong);
+        font-size: 0.73rem;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin-bottom: 18px;
+        font-size: clamp(3.25rem, 8vw, 6.8rem);
+        line-height: 0.92;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        margin-bottom: 0;
+        font-size: clamp(1.45rem, 2.4vw, 2.25rem);
+        line-height: 1.08;
+        letter-spacing: 0;
+      }
+
+      .hero-text {
+        max-width: 610px;
+        color: #c8d0dd;
+        font-size: clamp(1rem, 1.8vw, 1.16rem);
+        line-height: 1.7;
+      }
+
+      .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 28px 0 30px;
+      }
+
+      .hero-meta span {
+        padding: 8px 11px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.045);
+        color: var(--soft);
+        font-size: 0.82rem;
+        font-weight: 700;
+      }
+
+      .primary-action,
+      button {
+        display: inline-flex;
+        min-height: 48px;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #6f9ce8, #8d80dd);
+        color: #ffffff;
+        font: inherit;
+        font-weight: 800;
+        box-shadow: 0 14px 38px rgba(65, 99, 171, 0.24);
+        cursor: pointer;
+        transition: transform 180ms ease, filter 180ms ease;
+      }
+
+      .primary-action {
+        padding: 0 22px;
+      }
+
+      .primary-action:hover,
+      button:hover {
+        filter: brightness(1.04);
+        transform: translateY(-2px);
+      }
+
+      .metric-strip,
+      .search-layout,
+      .market-grid,
+      .analytics {
+        display: grid;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .metric-strip {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        margin-top: 26px;
+      }
+
+      .metric-strip article,
+      .search-panel,
+      .insight-panel,
+      .chart-panel,
+      .kpi-panel,
+      .candidate-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(18px);
+      }
+
+      .metric-strip article {
+        padding: 22px;
+      }
+
+      .metric-strip span {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--blue-strong);
+        font-size: clamp(1.65rem, 3vw, 2.25rem);
+        font-weight: 800;
+      }
+
+      .metric-strip p,
+      .candidate-card p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .search-layout {
+        grid-template-columns: minmax(0, 1fr);
+        margin-top: 16px;
+      }
+
+      .search-panel,
+      .insight-panel,
+      .chart-panel,
+      .kpi-panel {
+        padding: 26px;
+      }
+
+      .section-heading {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 22px;
+      }
+
+      .section-heading.compact {
+        display: block;
+      }
+
+      .search-form {
+        display: grid;
+        grid-template-columns: 1.35fr 0.85fr 0.7fr auto;
+        gap: 12px;
+        align-items: end;
+      }
+
+      label {
+        display: grid;
+        gap: 8px;
+        color: #e4e9f1;
+        font-size: 0.84rem;
+        font-weight: 800;
+      }
+
+      select,
+      input {
+        width: 100%;
+        min-height: 48px;
+        border: 1px solid rgba(161, 178, 205, 0.2);
+        border-radius: 8px;
+        background: rgba(8, 13, 22, 0.72);
+        color: var(--text);
+        font: inherit;
+        outline: none;
+        padding: 0 14px;
+      }
+
+      select:focus,
+      input:focus {
+        border-color: rgba(122, 167, 242, 0.72);
+        box-shadow: 0 0 0 4px rgba(95, 143, 216, 0.14);
+      }
+
+      option {
+        background: #101827;
+      }
+
+      button {
+        min-width: 150px;
+      }
+
+      button:disabled {
+        cursor: wait;
+        opacity: 0.72;
+      }
+
+      .ranking-section {
+        padding: 20px 0 30px;
+      }
+
+      .status {
+        min-height: 20px;
+        margin-bottom: 18px;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .candidate-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .candidate-card {
+        position: relative;
+        min-height: 360px;
+        padding: 18px;
+        overflow: hidden;
+        animation: liftIn 420ms ease both;
+      }
+
+      .candidate-card::before {
+        position: absolute;
+        inset: 0 0 auto;
+        height: 4px;
+        content: "";
+        background: linear-gradient(90deg, var(--blue), var(--indigo), var(--cyan-soft));
+      }
+
+      .candidate-rank {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+
+      .candidate-rank span {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        border-radius: 8px;
+        background: rgba(95, 143, 216, 0.14);
+        color: var(--blue-strong);
+        font-weight: 900;
+      }
+
+      .judgement {
+        color: #9bb7ef;
+        font-size: 0.72rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .candidate-card h3 {
+        min-height: 52px;
+        margin: 0 0 8px;
+        font-size: 1.08rem;
+        line-height: 1.2;
+      }
+
+      .role {
+        min-height: 38px;
+        color: var(--muted);
+        font-size: 0.86rem;
+        font-weight: 700;
+      }
+
+      .score {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin: 18px 0;
+      }
+
+      .score strong {
+        color: var(--blue-strong);
+        font-size: 2.2rem;
+      }
+
+      .score span {
+        color: var(--muted);
+        font-weight: 800;
+      }
+
+      .candidate-kpis {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .mini-kpi {
+        display: grid;
+        gap: 7px;
+      }
+
+      .mini-kpi div {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: #e4e9f1;
+        font-size: 0.82rem;
+        font-weight: 800;
+      }
+
+      .mini-track {
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+      }
+
+      .mini-track span {
+        display: block;
+        width: var(--value);
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--blue), var(--indigo));
+      }
+
+      .salary {
+        display: inline-flex;
+        margin-bottom: 16px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: rgba(127, 182, 201, 0.12);
+        color: #cde5ef;
+        font-size: 0.82rem;
+        font-weight: 900;
+      }
+
+      .justification {
+        color: #c2cbd8;
+        font-size: 0.82rem;
+        line-height: 1.55;
+      }
+
+      .market-grid {
+        grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1fr);
+        margin-top: 16px;
+      }
+
+      .analytics {
+        grid-template-columns: minmax(0, 1fr);
+        padding-bottom: 70px;
+      }
+
+      .category-grid,
+      .roles-chart,
+      .kpi-copy {
+        display: grid;
+        gap: 12px;
+      }
+
+      .category-item {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        padding: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .category-item strong {
+        font-size: 0.94rem;
+      }
+
+      .category-item span {
+        color: var(--blue-strong);
+        font-weight: 800;
+      }
+
+      .bar-row {
+        display: grid;
+        grid-template-columns: minmax(150px, 230px) 1fr 56px;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .bar-row strong {
+        color: #e4e9f1;
+        font-size: 0.9rem;
+      }
+
+      .bar-track {
+        height: 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.07);
+        overflow: hidden;
+      }
+
+      .bar-fill {
+        display: block;
+        width: var(--value);
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--blue), var(--cyan-soft));
+        animation: growBar 800ms ease both;
+      }
+
+      .bar-row em {
+        color: var(--muted);
+        font-style: normal;
+        font-weight: 800;
+        text-align: right;
+      }
+
+      .kpi-copy {
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .kpi-copy span {
+        color: var(--blue-strong);
+        font-weight: 800;
+      }
+
+      @keyframes growBar {
+        from {
+          width: 0;
+        }
+      }
+
+      @keyframes liftIn {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 1080px) {
+        .market-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .search-form,
+        .metric-strip {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .candidate-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 680px) {
+        .nav-links {
+          display: none;
+        }
+
+        .hero {
+          min-height: auto;
+          padding: 56px 0 42px;
+        }
+
+        h1 {
+          font-size: clamp(3rem, 17vw, 4.9rem);
+        }
+
+        .search-form,
+        .metric-strip,
+        .candidate-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .bar-row {
+          grid-template-columns: 1fr 48px;
+        }
+
+        .bar-track {
+          grid-column: 1 / -1;
+          grid-row: 2;
+        }
+
+        .section-heading {
+          display: block;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#home" aria-label="Recruit IT home">
+        <span class="brand-mark">R</span>
+        <span>Recruit IT</span>
+      </a>
+      <nav class="nav-links" aria-label="Navegación principal">
+        <a href="#busqueda">Búsqueda</a>
+        <a href="#ranking">Top 5</a>
+        <a href="#estadisticas">Estadísticas</a>
+      </nav>
+    </header>
+
+    <main id="home">
+      <section class="hero">
+        <div class="hero-shell">
+          <p class="eyebrow">Talent intelligence para equipos IT</p>
+          <h1>Recruit IT</h1>
+          <p class="hero-text">Encuentra candidatos prometedores por perfil, presupuesto y experiencia.</p>
+          <div class="hero-meta" aria-label="Capacidades principales">
+            <span>Top 5 automático</span>
+            <span>Match técnico</span>
+            <span>Ajuste salarial</span>
+            <span>Perfiles IT</span>
+          </div>
+          <a class="primary-action" href="#busqueda">Buscar candidatos</a>
+        </div>
+      </section>
+
+      <section class="metric-strip" id="estadisticas" aria-label="Métricas principales">
+        <article>
+          <span id="totalCandidates">--</span>
+          <p>Candidatos totales</p>
+        </article>
+        <article>
+          <span id="totalIt">--</span>
+          <p>Perfiles IT detectados</p>
+        </article>
+        <article>
+          <span id="avgSalary">--</span>
+          <p>Sueldo promedio IT</p>
+        </article>
+        <article>
+          <span id="avgExperience">--</span>
+          <p>Experiencia promedio</p>
+        </article>
+      </section>
+
+      <section class="search-layout" id="busqueda">
+        <div class="search-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Búsqueda inteligente</p>
+              <h2>Define el perfil y el presupuesto</h2>
+            </div>
+          </div>
+
+          <form id="searchForm" class="search-form">
+            <label>
+              Perfil IT
+              <select id="profileSelect" name="profile"></select>
+            </label>
+            <label>
+              Presupuesto máximo
+              <input id="salaryInput" name="salary" type="number" min="10000" step="1000" value="95000" />
+            </label>
+            <label>
+              Experiencia mínima
+              <input id="experienceInput" name="experience" type="number" min="0" max="30" value="3" />
+            </label>
+            <button type="submit">
+              <span>Analizar talento</span>
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <section class="ranking-section" id="ranking">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Shortlist priorizada</p>
+            <h2>Los 5 perfiles más prometedores</h2>
+          </div>
+        </div>
+        <div id="statusMessage" class="status">Preparando búsqueda de talento...</div>
+        <div id="candidateGrid" class="candidate-grid"></div>
+      </section>
+
+      <section class="market-grid">
+        <div class="insight-panel">
+          <div class="section-heading compact">
+            <p class="eyebrow">Categorías</p>
+            <h2>Mapa del proyecto</h2>
+          </div>
+          <div id="categoryGrid" class="category-grid"></div>
+        </div>
+
+        <div class="chart-panel">
+          <div class="section-heading compact">
+            <p class="eyebrow">Demanda</p>
+            <h2>Roles IT más ofertados</h2>
+          </div>
+          <div id="rolesChart" class="roles-chart"></div>
+        </div>
+      </section>
+
+      <section class="analytics">
+        <div class="kpi-panel">
+          <div class="section-heading compact">
+            <p class="eyebrow">KPIs clave</p>
+            <h2>Lectura del agente</h2>
+          </div>
+          <div class="kpi-copy">
+            <span>Match Técnico</span>
+            <p>Evalúa presencia del perfil en CV/rol y seniority requerido.</p>
+            <span>Ajuste Salarial</span>
+            <p>Mide cercanía al presupuesto máximo informado.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const api = {
+        profiles: "/api/agente/perfiles-it",
+        stats: "/api/agente/estadisticas",
+        candidates: "/api/agente/top-candidatos",
+      };
+
+      const $ = (selector) => document.querySelector(selector);
+
+      const formatNumber = new Intl.NumberFormat("es-AR");
+      const formatCurrency = new Intl.NumberFormat("es-AR", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0,
+      });
+
+      function safeNumber(value, fallback = 0) {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : fallback;
+      }
+
+      function candidateName(candidate) {
+        return candidate["Job Applicant Name"] || "Candidato sin nombre";
+      }
+
+      function candidateRole(candidate) {
+        return candidate["Job Roles"] || "Perfil IT";
+      }
+
+      function setStatus(message) {
+        $("#statusMessage").textContent = message;
+      }
+
+      function renderProfiles(profiles) {
+        const select = $("#profileSelect");
+        select.innerHTML = profiles
+          .map((profile) => `<option value="${profile.nombre}">${profile.nombre} - ${profile.categoria}</option>`)
+          .join("");
+
+        const preferred = profiles.find((profile) => profile.nombre === "Machine Learning Engineer") || profiles[0];
+        if (preferred) {
+          select.value = preferred.nombre;
+        }
+      }
+
+      function renderStats(stats) {
+        $("#totalCandidates").textContent = formatNumber.format(stats.total_candidatos || 0);
+        $("#totalIt").textContent = formatNumber.format(stats.total_it || 0);
+        $("#avgSalary").textContent = formatCurrency.format(stats.sueldo_promedio_it || 0);
+        $("#avgExperience").textContent = `${stats.experiencia_promedio_it || 0} años`;
+
+        const categories = stats.categorias || [];
+        $("#categoryGrid").innerHTML = categories
+          .map(
+            (item) => `
+              <div class="category-item">
+                <strong>${item.categoria}</strong>
+                <span>${formatNumber.format(item.cantidad)}</span>
+              </div>
+            `,
+          )
+          .join("");
+
+        const roles = stats.roles_mas_ofertados || [];
+        const max = Math.max(...roles.map((role) => role.cantidad), 1);
+        $("#rolesChart").innerHTML = roles
+          .map((role) => {
+            const width = Math.max(8, Math.round((role.cantidad / max) * 100));
+            return `
+              <div class="bar-row">
+                <strong>${role.rol}</strong>
+                <div class="bar-track"><span class="bar-fill" style="--value: ${width}%"></span></div>
+                <em>${role.cantidad}</em>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function renderCandidates(candidates) {
+        if (!candidates.length) {
+          $("#candidateGrid").innerHTML = "";
+          setStatus("No encontramos candidatos para esos filtros.");
+          return;
+        }
+
+        $("#candidateGrid").innerHTML = candidates
+          .map((candidate, index) => {
+            const score = safeNumber(candidate.Score);
+            const match = Math.min(100, safeNumber(candidate.MatchTecnico));
+            const salaryFit = Math.min(100, safeNumber(candidate.AjusteSalarial));
+            const salary = safeNumber(candidate["sueldo pretendido"]);
+            const delay = index * 70;
+
+            return `
+              <article class="candidate-card" style="animation-delay: ${delay}ms">
+                <div class="candidate-rank">
+                  <span>#${index + 1}</span>
+                  <strong class="judgement">${candidate.Juicio || "Evaluar"}</strong>
+                </div>
+                <h3>${candidateName(candidate)}</h3>
+                <div class="role">${candidateRole(candidate)}</div>
+                <div class="score">
+                  <strong>${Math.round(score)}</strong>
+                  <span>score</span>
+                </div>
+                <div class="candidate-kpis">
+                  <div class="mini-kpi">
+                    <div><span>Match Técnico</span><strong>${match}%</strong></div>
+                    <div class="mini-track"><span style="--value: ${match}%"></span></div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div><span>Ajuste Salarial</span><strong>${salaryFit}%</strong></div>
+                    <div class="mini-track"><span style="--value: ${salaryFit}%"></span></div>
+                  </div>
+                </div>
+                <span class="salary">${formatCurrency.format(salary)}</span>
+                <p class="justification">${candidate.Justificacion || "Candidato priorizado por el agente."}</p>
+              </article>
+            `;
+          })
+          .join("");
+
+        setStatus(`${candidates.length} candidatos priorizados por el agente.`);
+      }
+
+      async function getJson(url) {
+        const response = await fetch(url);
+        if (!response.ok) {
+          const detail = await response.text();
+          throw new Error(detail || `Error HTTP ${response.status}`);
+        }
+        return response.json();
+      }
+
+      async function searchCandidates() {
+        const form = $("#searchForm");
+        const button = form.querySelector("button");
+        const profile = $("#profileSelect").value;
+        const salary = safeNumber($("#salaryInput").value, 95000);
+        const experience = safeNumber($("#experienceInput").value, 0);
+
+        button.disabled = true;
+        setStatus("Analizando candidatos con FastAPI...");
+
+        try {
+          const params = new URLSearchParams({
+            tecnologia: profile,
+            sueldo_maximo: salary,
+            experiencia_minima: experience,
+            top_n: 5,
+          });
+          const candidates = await getJson(`${api.candidates}?${params.toString()}`);
+          renderCandidates(candidates);
+        } catch (error) {
+          setStatus("No se pudo completar la búsqueda. Revisa que el backend esté corriendo.");
+          console.error(error);
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      async function init() {
+        $("#searchForm").addEventListener("submit", (event) => {
+          event.preventDefault();
+          searchCandidates();
+        });
+
+        try {
+          const [profiles, stats] = await Promise.all([getJson(api.profiles), getJson(api.stats)]);
+          renderProfiles(profiles);
+          renderStats(stats);
+          await searchCandidates();
+        } catch (error) {
+          setStatus("No se pudo cargar la experiencia inicial. Revisa el servidor FastAPI.");
+          console.error(error);
+        }
+      }
+
+      init();
+    </script>
+  </body>
+</html>
