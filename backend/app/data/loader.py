@@ -6,7 +6,14 @@ from app.core.config import DATA_CSV, OUTPUT_CSV
 
 def cargar_dataset(csv_path=None):
     path = csv_path or DATA_CSV
-    return pd.read_csv(path, sep=';', on_bad_lines='skip', encoding='utf-8')
+    return pd.read_csv(
+        path,
+        sep=None,
+        engine="python",
+        on_bad_lines="skip",
+        encoding="utf-8",
+        keep_default_na=False,
+    )
 
 
 def guardar_dataset(df, output_path=None):

@@ -1,8 +1,14 @@
-import pandas as pd
-import chromadb
+import os
 from pathlib import Path
+
+import chromadb
+import pandas as pd
 from sentence_transformers import SentenceTransformer
+
 from app.services.tech_knowledge import get_tech_kb
+
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
 PROJECT_DIR = Path(__file__).resolve().parents[3]
 CHROMA_DIR = PROJECT_DIR / "data" / "chroma_db"
@@ -14,7 +20,7 @@ _embedding_model = None
 def _get_embedding_model():
     global _embedding_model
     if _embedding_model is None:
-        _embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
+        _embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME, local_files_only=True)
     return _embedding_model
 
 
@@ -75,26 +81,21 @@ def evaluar_talento_it(
     sueldo_maximo: float,
     experiencia_minima: int,
 ) -> pd.DataFrame:
-    """
-    Puntúa candidatos IT con comprensión semántica de tecnologías.
-    
-    Utiliza ChromaDB para entender relaciones entre tecnologías:
-    - React ≈ Next.js (match 0.95)
-    - JavaScript ≈ TypeScript (match 0.85)
-    - Usa embeddings precomputados (sin recalcular en cada query)
-    """
+    """Puntua candidatos IT con busqueda vectorial y matching semantico."""
     df_evaluado = df.copy()
     scores = []
     match_tecnico_porcentaje = []
     ajuste_salarial_porcentaje = []
     juicios = []
     justificaciones = []
-    
-    # Obtener base de conocimiento semántica
-    tech_kb = get_tech_kb()
 
-    for idx, row in df_evaluado.iterrows():
-        # --- MATCHING TÉCNICO SEMÁNTICO ---
+    try:
+        tech_kb = get_tech_kb()
+    except Exception as exc:
+        print(f"Tech knowledge unavailable: {exc}. Using lexical/vector fallback.")
+        tech_kb = None
+
+    for _, row in df_evaluado.iterrows():
         resume_texto = " ".join(
             [
                 str(row.get("Resume", "")),
@@ -102,13 +103,20 @@ def evaluar_talento_it(
                 str(row.get("Job Description", "")),
             ]
         )
-        
-        # Calcular similitud semántica (usa embeddings cacheados en tech_knowledge)
-        similitud_semantica, razon_tecnica = tech_kb.calculate_semantic_match(
-            cv_text=resume_texto,
-            required_tech=tecnologia,
-            threshold=0.6
-        )
+
+        if tech_kb is not None:
+            try:
+                similitud_semantica, razon_tecnica = tech_kb.calculate_semantic_match(
+                    cv_text=resume_texto,
+                    required_tech=tecnologia,
+                    threshold=0.6,
+                )
+            except Exception as exc:
+                similitud_semantica = 0.0
+                razon_tecnica = f"base semantica no disponible ({exc})"
+        else:
+            similitud_semantica = 0.0
+            razon_tecnica = "base semantica no disponible"
 
         texto_normalizado = resume_texto.lower()
         tecnologia_normalizada = tecnologia.lower().strip()
@@ -120,18 +128,15 @@ def evaluar_talento_it(
         elif vector_similarity >= 0.5 and vector_similarity > similitud_semantica:
             similitud_semantica = vector_similarity
             razon_tecnica = f"match vectorial con el perfil del candidato ({vector_similarity*100:.0f}% similar)"
-        
-        # Convertir similitud (0-1) a score (0-40)
+
         match_tecnico_score = int(similitud_semantica * 40)
-        
-        # Bonus por experiencia
-        años_cand = row.get("años de experiencia", 0)
-        if años_cand >= experiencia_minima:
+
+        anios_cand = row.get("años de experiencia", 0)
+        if anios_cand >= experiencia_minima:
             match_tecnico_score += 20
         elif experiencia_minima > 0:
-            match_tecnico_score += int((años_cand / experiencia_minima) * 20)
+            match_tecnico_score += int((anios_cand / experiencia_minima) * 20)
 
-        # --- MATCHING ECONÓMICO (sin cambios) ---
         match_economico_score = 0
         sueldo_cand = row.get("sueldo pretendido", 0)
 
@@ -146,7 +151,6 @@ def evaluar_talento_it(
         match_tecnico_porcentaje.append(round((match_tecnico_score / 60) * 100))
         ajuste_salarial_porcentaje.append(round((match_economico_score / 40) * 100))
 
-        # --- JUICIO Y JUSTIFICACIÓN ---
         if score_total >= 80 and similitud_semantica >= 0.7:
             juicio = "Recomendar"
         elif score_total >= 55:
@@ -154,23 +158,18 @@ def evaluar_talento_it(
         else:
             juicio = "Descartar"
 
-        detalles = []
-        
-        # Explicación técnica semántica
-        detalles.append(f"Match semantico: {razon_tecnica}")
-        detalles.append(f"Similitud tecnica: {similitud_semantica*100:.0f}%")
-        
-        # Experiencia
-        if años_cand >= experiencia_minima:
-            detalles.append(f"OK Experiencia: {años_cand} años (requería {experiencia_minima})")
-        else:
-            detalles.append(f"Atencion Experiencia: {años_cand} años (requería {experiencia_minima})")
+        detalles = [
+            f"Match semantico: {razon_tecnica}",
+            f"Similitud tecnica: {similitud_semantica*100:.0f}%",
+        ]
 
-        # Sueldo
+        if anios_cand >= experiencia_minima:
+            detalles.append(f"OK Experiencia: {anios_cand} años (requería {experiencia_minima})")
+        else:
+            detalles.append(f"Atencion Experiencia: {anios_cand} años (requería {experiencia_minima})")
+
         if row.get("sueldo_estimado_por_IA") is True:
-            detalles.append(
-                f"Nota: Salario omitido en el CV. La IA predijo una pretensión salarial estimada de ${sueldo_cand:,.2f} utilizando como referencia estadística la base de datos externa de Adzuna."
-            )
+            detalles.append(f"Salario estimado: ${sueldo_cand:,.0f} (presupuesto: ${sueldo_maximo:,.0f}) - IA estimó")
         elif sueldo_cand <= sueldo_maximo:
             detalles.append(f"OK Salario: ${sueldo_cand:,.0f} (presupuesto: ${sueldo_maximo:,.0f})")
         else:
@@ -187,63 +186,6 @@ def evaluar_talento_it(
     df_evaluado["Juicio"] = juicios
     df_evaluado["Justificacion"] = justificaciones
     return df_evaluado
-
-
-def _obtener_top_candidatos_legacy(
-    df: pd.DataFrame,
-    tecnologia: str,
-    sueldo_maximo: float,
-    experiencia_minima: int,
-    top_n: int = 10,
-) -> list:
-    """
-    OPTIMIZADO: Usa ChromaDB para búsqueda semántica rápida (v2).
-    
-    Estrategia:
-    1. Consulta ChromaDB para obtener 50 candidatos similares (~300ms)
-    2. Evalúa solo esos 50 (~2.2s)
-    3. Ordena y devuelve top_n
-    
-    Total esperado: ~2.5-3s en lugar de 40s
-    """
-    # 1. Consulta ChromaDB para obtener candidatos similares
-    try:
-        client = chromadb.PersistentClient(path="./data/chroma_db")
-        collection = client.get_collection(name="candidates")
-        
-        # Construir query: tecnología + experiencia + sueldo
-        query_text = f"{tecnologia} {experiencia_minima} years experience ${sueldo_maximo}"
-        
-        # Buscar top 50 candidatos similares (filtro inicial muy rápido)
-        results = collection.query(
-            query_texts=[query_text],
-            n_results=min(50, len(df)),  # ← OPTIMIZADO: 50 en lugar de 100
-            where=None
-        )
-        
-        if not results["ids"] or not results["ids"][0]:
-            # Fallback: si ChromaDB no devuelve resultados, procesar todos
-            df_procesado = evaluar_talento_it(df, tecnologia, sueldo_maximo, experiencia_minima)
-            top_df = df_procesado.sort_values(by="Score", ascending=False).head(top_n)
-            return top_df.to_dict(orient="records")
-        
-        # 2. Extraer IDs de ChromaDB (formato: "cand_0", "cand_1", etc.)
-        candidate_ids = [int(cid.split("_")[1]) for cid in results["ids"][0]]
-        
-        # 3. Evaluar solo los candidatos recuperados
-        df_subset = df.iloc[candidate_ids].copy()
-        df_evaluado = evaluar_talento_it(df_subset, tecnologia, sueldo_maximo, experiencia_minima)
-        
-        # 4. Ordenar por score y devolver top_n
-        top_df = df_evaluado.sort_values(by="Score", ascending=False).head(top_n)
-        return top_df.to_dict(orient="records")
-    
-    except Exception as e:
-        # Fallback: si algo falla con ChromaDB, procesar todos (lento pero funcional)
-        print(f"ChromaDB query failed: {e}. Falling back to full evaluation...")
-        df_procesado = evaluar_talento_it(df, tecnologia, sueldo_maximo, experiencia_minima)
-        top_df = df_procesado.sort_values(by="Score", ascending=False).head(top_n)
-        return top_df.to_dict(orient="records")
 
 
 def obtener_top_candidatos(
