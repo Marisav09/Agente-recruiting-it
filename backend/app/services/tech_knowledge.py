@@ -10,6 +10,9 @@ from typing import List, Dict, Tuple
 import chromadb
 from chromadb.utils import embedding_functions
 
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+
 PROJECT_DIR = Path(__file__).resolve().parents[3]
 DEFAULT_CHROMA_DIR = PROJECT_DIR / "data" / "chroma_db"
 
@@ -33,7 +36,8 @@ class TechKnowledgeBase:
         # Usar la nueva API de ChromaDB (v0.4+) con SentenceTransformer
         # IMPORTANTE: Especificar el mismo modelo que usamos en precompute_embeddings.py
         self.embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
-            model_name="all-MiniLM-L6-v2"
+            model_name="all-MiniLM-L6-v2",
+            local_files_only=True,
         )
         
         self.client = chromadb.PersistentClient(path=persist_dir)

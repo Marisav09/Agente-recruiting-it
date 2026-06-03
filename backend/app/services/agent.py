@@ -1,8 +1,12 @@
 import pandas as pd
 import chromadb
+import os
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
 from app.services.tech_knowledge import get_tech_kb
+
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
 PROJECT_DIR = Path(__file__).resolve().parents[3]
 CHROMA_DIR = PROJECT_DIR / "data" / "chroma_db"
@@ -14,7 +18,7 @@ _embedding_model = None
 def _get_embedding_model():
     global _embedding_model
     if _embedding_model is None:
-        _embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
+        _embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME, local_files_only=True)
     return _embedding_model
 
 
@@ -90,8 +94,11 @@ def evaluar_talento_it(
     juicios = []
     justificaciones = []
     
-    # Obtener base de conocimiento semántica
-    tech_kb = get_tech_kb()
+    try:
+        tech_kb = get_tech_kb()
+    except Exception as exc:
+        print(f"Tech knowledge unavailable: {exc}. Using lexical/vector fallback.")
+        tech_kb = None
 
     for idx, row in df_evaluado.iterrows():
         # --- MATCHING TÉCNICO SEMÁNTICO ---
@@ -103,12 +110,19 @@ def evaluar_talento_it(
             ]
         )
         
-        # Calcular similitud semántica (usa embeddings cacheados en tech_knowledge)
-        similitud_semantica, razon_tecnica = tech_kb.calculate_semantic_match(
-            cv_text=resume_texto,
-            required_tech=tecnologia,
-            threshold=0.6
-        )
+        if tech_kb is not None:
+            try:
+                similitud_semantica, razon_tecnica = tech_kb.calculate_semantic_match(
+                    cv_text=resume_texto,
+                    required_tech=tecnologia,
+                    threshold=0.6
+                )
+            except Exception as exc:
+                similitud_semantica = 0.0
+                razon_tecnica = f"base semantica no disponible ({exc})"
+        else:
+            similitud_semantica = 0.0
+            razon_tecnica = "base semantica no disponible"
 
         texto_normalizado = resume_texto.lower()
         tecnologia_normalizada = tecnologia.lower().strip()

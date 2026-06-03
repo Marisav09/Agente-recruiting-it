@@ -3,7 +3,6 @@ from typing import Tuple
 from app.data.loader import cargar_dataset, guardar_dataset
 from app.services.prediccion import enriquecer_dataset
 
-
 def ejecutar_etl(csv_path: str | None = None, output_path: str | None = None) -> Tuple[object, str]:
     """Ejecuta el flujo ETL completo: carga, enriquece y guarda.
 
