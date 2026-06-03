@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Query
 from app.core.config import DATA_CSV, OUTPUT_CSV
 from app.data.loader import cargar_dataset
 from app.services.agent import obtener_top_candidatos
+from app.services.mercado import obtener_estimacion_mercado
 
 router = APIRouter()
 
@@ -104,3 +105,23 @@ def buscar_top_talento(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno del Agente: {str(e)}")
+
+
+@router.get("/mercado-laboral", response_model=Dict[str, Any])
+def obtener_mercado_laboral(
+    tecnologia: str = Query(..., description="Tecnologia requerida o perfil IT"),
+    experiencia_minima: int = Query(0, description="Anios minimos de experiencia"),
+    sueldo_maximo: float | None = Query(None, description="Presupuesto salarial maximo"),
+    fuente: str = Query("auto", description="auto, online o local"),
+):
+    try:
+        df = _leer_dataset()
+        return obtener_estimacion_mercado(
+            df=df,
+            stack=tecnologia,
+            experiencia_minima=experiencia_minima,
+            sueldo_maximo=sueldo_maximo,
+            fuente=fuente,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno de mercado laboral: {str(e)}")

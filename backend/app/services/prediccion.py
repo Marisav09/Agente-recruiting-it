@@ -35,9 +35,12 @@ def extraer_nivel(texto):
     return 0
 
 # Función principal para enriquecer el dataset
-def enriquecer_dataset():
+def enriquecer_dataset(df=None):
     np.random.seed(RANDOM_STATE)
-    df = cargar_dataset()
+    if df is None:
+        df = cargar_dataset()
+    else:
+        df = df.copy()
 
 # Asignamos años de experiencia y sueldos pretendidos, con un 10% de sueldos faltantes para simular la realidad
     df['años de experiencia'] = df.apply(asignar_experiencia, axis=1)

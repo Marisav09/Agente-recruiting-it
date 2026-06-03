@@ -367,6 +367,56 @@
         align-items: end;
       }
 
+      .market-panel {
+        display: grid;
+        grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.1fr);
+        gap: var(--space-md);
+        margin-top: var(--space-lg);
+        padding: var(--space-lg);
+        border: 1px solid rgba(143, 196, 255, 0.22);
+        border-radius: var(--radius-card);
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .market-summary {
+        display: grid;
+        gap: 8px;
+      }
+
+      .market-summary strong {
+        color: var(--primary-strong);
+        font-size: clamp(1.35rem, 2.2vw, 2rem);
+        line-height: 1.1;
+      }
+
+      .market-summary span,
+      .market-detail span {
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .market-detail {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .market-kpi {
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-control);
+        background: rgba(7, 16, 28, 0.48);
+      }
+
+      .market-kpi strong {
+        display: block;
+        margin-top: 6px;
+        color: var(--soft);
+        font-size: 1rem;
+      }
+
       label {
         display: grid;
         gap: 8px;
@@ -727,6 +777,7 @@
         }
 
         .search-form,
+        .market-panel,
         .metrics {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -756,6 +807,8 @@
         }
 
         .search-form,
+        .market-panel,
+        .market-detail,
         .metrics,
         .candidate-grid {
           grid-template-columns: 1fr;
@@ -881,6 +934,28 @@
             <span class="button-label">Analizar talento</span>
           </button>
         </form>
+
+        <div id="marketPanel" class="market-panel" aria-live="polite">
+          <div class="market-summary">
+            <span>Mercado laboral</span>
+            <strong id="marketRange">Consultando estimaciones...</strong>
+            <p id="marketSource" class="section-copy">La API intenta fuente online y usa datos locales si no hay credenciales.</p>
+          </div>
+          <div class="market-detail">
+            <div class="market-kpi">
+              <span>Mediana</span>
+              <strong id="marketMedian">--</strong>
+            </div>
+            <div class="market-kpi">
+              <span>Presupuesto</span>
+              <strong id="marketFit">--</strong>
+            </div>
+            <div class="market-kpi">
+              <span>Muestra</span>
+              <strong id="marketSample">--</strong>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section class="ranking-section" id="ranking" aria-labelledby="rankingTitle">
@@ -929,6 +1004,7 @@
         profiles: "/api/agente/perfiles-it",
         stats: "/api/agente/estadisticas",
         candidates: "/api/agente/top-candidatos",
+        market: "/api/agente/mercado-laboral",
       };
 
       const fallbackProfiles = [
@@ -977,6 +1053,7 @@
         const value =
           candidate.experiencia ??
           candidate.Experiencia ??
+          candidate["años de experiencia"] ??
           candidate["Años de experiencia"] ??
           candidate["Years of Experience"];
 
@@ -992,6 +1069,58 @@
         button.disabled = isLoading;
         button.classList.toggle("is-loading", isLoading);
         button.querySelector(".button-label").textContent = isLoading ? "Analizando..." : "Analizar talento";
+      }
+
+      function marketLabel(status) {
+        const labels = {
+          competitivo: "Competitivo",
+          alineado: "Alineado",
+          ajustado: "Ajustado",
+          bajo_mercado: "Bajo mercado",
+          sin_presupuesto: "Sin presupuesto",
+        };
+        return labels[status] || "Sin datos";
+      }
+
+      function renderMarket(market = {}) {
+        const target = market.banda_objetivo || {};
+        const comparison = market.comparacion_presupuesto || {};
+        const source = market.fuente === "adzuna_api" ? "API online Adzuna" : "dataset local";
+        const fallback = market.fallback_de ? ` Fallback aplicado: ${escapeHtml(market.motivo_fallback || "API no disponible")}.` : "";
+
+        $("#marketRange").textContent =
+          target.p25 && target.p75
+            ? `${formatCurrency.format(target.p25)} - ${formatCurrency.format(target.p75)}`
+            : "Sin rango salarial disponible";
+        $("#marketMedian").textContent = target.mediana ? formatCurrency.format(target.mediana) : "--";
+        $("#marketFit").textContent = marketLabel(comparison.estado);
+        $("#marketSample").textContent = formatNumber.format(target.muestra || market.muestra_total || 0);
+        $("#marketSource").textContent = `${target.seniority || "Seniority"} para ${market.stack || "stack seleccionado"} · fuente: ${source}.${fallback}`;
+      }
+
+      async function loadMarket() {
+        const profile = $("#profileSelect").value;
+        const salary = safeNumber($("#salaryInput").value, 95000);
+        const experience = safeNumber($("#experienceInput").value, 0);
+
+        try {
+          const params = new URLSearchParams({
+            tecnologia: profile,
+            sueldo_maximo: salary,
+            experiencia_minima: experience,
+            fuente: "auto",
+          });
+          const market = await getJson(`${api.market}?${params.toString()}`);
+          renderMarket(market);
+        } catch (error) {
+          renderMarket({
+            stack: profile,
+            fuente: "sin_datos",
+            banda_objetivo: {},
+            comparacion_presupuesto: { estado: "sin_datos" },
+          });
+          console.error(error);
+        }
       }
 
       function renderProfiles(profiles) {
@@ -1133,6 +1262,7 @@ function renderCandidates(candidates) {
           });
           const candidates = await getJson(`${api.candidates}?${params.toString()}`);
           renderCandidates(candidates);
+          await loadMarket();
         } catch (error) {
           $("#candidateGrid").innerHTML = `
             <div class="empty-state">
@@ -1151,6 +1281,10 @@ function renderCandidates(candidates) {
           event.preventDefault();
           searchCandidates();
         });
+
+        $("#profileSelect").addEventListener("change", loadMarket);
+        $("#salaryInput").addEventListener("change", loadMarket);
+        $("#experienceInput").addEventListener("change", loadMarket);
 
         try {
           const [profiles, stats] = await Promise.all([getJson(api.profiles), getJson(api.stats)]);

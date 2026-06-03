@@ -175,6 +175,38 @@ http://127.0.0.1:8000/api/agente/top-candidatos?tecnologia=Machine%20Learning%20
     - `experiencia_minima`: anos minimos de experiencia.
     - `top_n`: cantidad de candidatos a retornar.
 
+- `GET /api/agente/mercado-laboral`
+  - Devuelve estimaciones salariales para el stack seleccionado.
+  - Parametros:
+    - `tecnologia`: perfil o tecnologia buscada.
+    - `experiencia_minima`: anos minimos de experiencia.
+    - `sueldo_maximo`: presupuesto salarial maximo para comparar contra mercado.
+    - `fuente`: `auto`, `online` o `local`.
+  - `auto` intenta usar API online y vuelve al dataset local si faltan credenciales o la API no responde.
+
+Ejemplo:
+
+```text
+GET /api/agente/mercado-laboral?tecnologia=Python&sueldo_maximo=80000&experiencia_minima=3&fuente=auto
+```
+
+## Integracion con APIs salariales online
+
+El proyecto puede consultar Adzuna para obtener distribuciones salariales actuales por busqueda. Para activarlo, crea una cuenta de desarrollador en Adzuna y configura estas variables antes de iniciar Uvicorn:
+
+```powershell
+$env:ADZUNA_APP_ID="tu_app_id"
+$env:ADZUNA_APP_KEY="tu_app_key"
+$env:ADZUNA_COUNTRY="us"
+$env:ADZUNA_LOCATION=""
+```
+
+Notas:
+
+- `ADZUNA_COUNTRY` usa el codigo de pais de Adzuna, por ejemplo `us`, `gb`, `ar` si esta disponible para tu cuenta/fuente.
+- `ADZUNA_LOCATION` es opcional y permite acotar la busqueda geografica.
+- Si no configuras credenciales, la UI sigue funcionando con el dataset local y marca la fuente como fallback.
+
 Ejemplo:
 
 ```text
