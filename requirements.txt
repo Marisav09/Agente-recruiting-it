@@ -3,3 +3,6 @@ uvicorn[standard]
 pandas
 numpy
 scikit-learn
+chromadb
+sentence-transformers
+torch
