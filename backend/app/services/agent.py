@@ -169,7 +169,10 @@ def evaluar_talento_it(
             detalles.append(f"Atencion Experiencia: {anios_cand} años (requería {experiencia_minima})")
 
         if row.get("sueldo_estimado_por_IA") is True:
-            detalles.append(f"Salario estimado: ${sueldo_cand:,.0f} (presupuesto: ${sueldo_maximo:,.0f}) - IA estimó")
+            detalles.append(
+                f"Salario estimado por IA: ${sueldo_cand:,.0f} "
+                f"(presupuesto: ${sueldo_maximo:,.0f}); usa referencia estadistica externa de Adzuna cuando esta disponible"
+            )
         elif sueldo_cand <= sueldo_maximo:
             detalles.append(f"OK Salario: ${sueldo_cand:,.0f} (presupuesto: ${sueldo_maximo:,.0f})")
         else:
